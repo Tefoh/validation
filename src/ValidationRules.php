@@ -160,34 +160,24 @@ class ValidationRules
     {
         ValidationMessages::setCustomMessages( $validator );
 
-        if (!preg_match('/^\d{8,10}$/', $value) || preg_match('/^[0]{10}|[1]{10}|[2]{10}|[3]{10}|[4]{10}|[5]{10}|[6]{10}|[7]{10}|[8]{10}|[9]{10}$/', $value)) {
+        if(!preg_match('/^[0-9]{10}$/',$value)) {
             return false;
         }
-
-        $sub = 0;
-
-        if (strlen($value) == 8) {
-            $value = '00' . $value;
-        } elseif (strlen($value) == 9) {
-            $value = '0' . $value;
+        
+        for($i=0;$i<10;$i++) {
+            if(preg_match('/^'.$i.'{10}$/',$value)) {
+                return false;
+            }
         }
-
-        for ($i = 0; $i <= 8; $i++) {
-            $sub = $sub + ( $value[$i] * ( 10 - $i ) );
+        for($i=0, $sum=0; $i<9; $i++) {
+            $sum+=((10-$i)*intval(substr($value, $i,1)));
         }
-
-        if (( $sub % 11 ) < 2) {
-            $control = ( $sub % 11 );
-        } else {
-            $control = 11 - ( $sub % 11 );
-        }
-
-        if ($value[9] == $control) {
+        $ret = $sum % 11;
+        $parity = intval(substr($value, 9,1));
+        if(($ret < 2 && $ret == $parity) || ($ret >= 2 && $ret == 11-$parity)) {
             return true;
-        } else {
-            return false;
         }
-
+        return false;
     }
 
     /**
